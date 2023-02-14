@@ -382,6 +382,10 @@ class AwsS3Provider extends Provider implements ProviderInterface
         $bucket = $this->getBucket();
         $bucket = (!empty($bucket)) ? $bucket.'.' : '';
 
+        if ($folder = $this->supplier['upload_folder']) {
+            $path = "{$folder}{$path}";
+        }
+
         return $url['scheme'] . '://' . $bucket . $url['host'] . '/' . $path;
     }
 
