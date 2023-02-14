@@ -257,8 +257,15 @@ class AwsS3Provider extends Provider implements ProviderInterface
         $filesOnAWS = new Collection([]);
 
         $params = ['Bucket' => $this->getBucket()];
+
+        if ($folder = $this->supplier['upload_folder']) {
+            $params['Prefix'] = $folder;
+            $params['Delimiter'] = '/';
+        }
+
         do {
             $files = $this->s3_client->listObjectsV2($params);
+
             $params['ContinuationToken'] = $files->get('NextContinuationToken');
 
             foreach ($files->get('Contents') as $file) {
@@ -270,6 +277,10 @@ class AwsS3Provider extends Provider implements ProviderInterface
                 $filesOnAWS->put($file['Key'], $a);
             }
         } while ($files->get('IsTruncated'));
+
+        if ($this->supplier['upload_folder']) {
+            $filesOnAWS = $filesOnAWS->skip(1);
+        }
 
         if ($filesOnAWS->isEmpty()) {
             //no files on bucket. lets upload everything found.
